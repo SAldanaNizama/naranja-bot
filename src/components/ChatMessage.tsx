@@ -7,6 +7,31 @@ interface ChatMessageProps {
   isLoading?: boolean;
 }
 
+// Function to parse message and convert URLs to clickable links
+function parseMessageWithLinks(message: string) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = message.split(urlRegex);
+  
+  return parts.map((part, index) => {
+    if (urlRegex.test(part)) {
+      // Reset regex lastIndex since we're reusing it
+      urlRegex.lastIndex = 0;
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline hover:text-primary/80 transition-colors break-all"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 export function ChatMessage({ message, isUser, isLoading }: ChatMessageProps) {
   return (
     <div
@@ -39,7 +64,9 @@ export function ChatMessage({ message, isUser, isLoading }: ChatMessageProps) {
             <span className="w-2 h-2 rounded-full bg-current animate-pulse-dot" style={{ animationDelay: "400ms" }} />
           </div>
         ) : (
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message}</p>
+          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+            {parseMessageWithLinks(message)}
+          </p>
         )}
       </div>
     </div>
