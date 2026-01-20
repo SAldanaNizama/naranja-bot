@@ -58,15 +58,51 @@ export function Chatbot() {
         throw new Error("Error en la respuesta del servidor");
       }
 
-      const data = await response.json();
+      // Check if response is streaming
+      const contentType = response.headers.get("content-type");
       
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.output || data.message || data.response || "Lo siento, no pude procesar tu mensaje.",
-        isUser: false,
-      };
+      if (contentType?.includes("text/event-stream") || contentType?.includes("text/plain")) {
+        // Handle streaming response
+        const botMessageId = (Date.now() + 1).toString();
+        
+        // Add empty bot message that will be updated
+        setMessages((prev) => [...prev, { id: botMessageId, content: "", isUser: false }]);
+        setIsLoading(false);
+        
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let accumulatedContent = "";
+        
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            accumulatedContent += chunk;
+            
+            // Update the bot message with accumulated content
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === botMessageId
+                  ? { ...msg, content: accumulatedContent }
+                  : msg
+              )
+            );
+          }
+        }
+      } else {
+        // Handle regular JSON response
+        const data = await response.json();
+        
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: data.output || data.message || data.response || "Lo siento, no pude procesar tu mensaje.",
+          isUser: false,
+        };
 
-      setMessages((prev) => [...prev, botMessage]);
+        setMessages((prev) => [...prev, botMessage]);
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
