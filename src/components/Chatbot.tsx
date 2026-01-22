@@ -50,8 +50,9 @@ export function Chatbot() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: content,
           sessionId: sessionIdRef.current,
+          action: "sendMessage",
+          chatInput: content,
         }),
       });
 
