@@ -10,7 +10,7 @@ interface Message {
   isUser: boolean;
 }
 
-const N8N_WEBHOOK_URL = "https://gexternia.app.n8n.cloud/webhook/a0ad8f79-b06c-4d1e-8f50-53d049592207";
+const N8N_WEBHOOK_URL = "https://gexternia.app.n8n.cloud/webhook/949b6b9a-69a6-40b2-85e1-36e2ddb613f2/chat";
 
 export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
@@ -22,6 +22,7 @@ export function Chatbot() {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const sessionIdRef = useRef<string>(`user-${Date.now()}`);
   const { toast } = useToast();
 
   const scrollToBottom = () => {
@@ -50,7 +51,7 @@ export function Chatbot() {
         },
         body: JSON.stringify({
           message: content,
-          sessionId: "user-" + Date.now(),
+          sessionId: sessionIdRef.current,
         }),
       });
 
