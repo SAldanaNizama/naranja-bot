@@ -2,12 +2,19 @@ import { useState } from "react";
 import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface ChatInputProps {
+export interface ChatInputProps {
   onSend: (message: string) => void;
+  onBudgetStart?: () => void;
+  showBudgetButton?: boolean;
   disabled?: boolean;
 }
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
+export function ChatInput({
+  onSend,
+  onBudgetStart = () => {},
+  showBudgetButton = false,
+  disabled,
+}: ChatInputProps) {
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -42,6 +49,24 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           "disabled:opacity-50 disabled:cursor-not-allowed"
         )}
       />
+      {showBudgetButton && (
+        <button
+          type="button"
+          onClick={onBudgetStart}
+          disabled={disabled}
+          className={cn(
+            "px-4 py-3 rounded-xl border border-border bg-background",
+            "flex items-center justify-center gap-2",
+            "font-medium text-sm text-foreground",
+            "hover:bg-muted active:scale-95",
+            "transition-all duration-200",
+            "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
+            "shadow-soft"
+          )}
+        >
+          Solicitar presupuesto
+        </button>
+      )}
       <button
         type="submit"
         disabled={!message.trim() || disabled}

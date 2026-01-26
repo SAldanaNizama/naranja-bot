@@ -24,6 +24,10 @@ export function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string>(`user-${Date.now()}`);
   const { toast } = useToast();
+  const showBudgetButton = messages.some(
+    (message) =>
+      !message.isUser && /Opción 1:|Opcion 1:/i.test(message.content),
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,10 +37,10 @@ export function Chatbot() {
     scrollToBottom();
   }, [messages]);
 
-  const sendMessage = async (content: string) => {
+  const sendMessage = async (content: string, displayContent = content) => {
     const userMessage: Message = {
       id: Date.now().toString(),
-      content,
+      content: displayContent,
       isUser: true,
     };
 
@@ -51,7 +55,6 @@ export function Chatbot() {
         },
         body: JSON.stringify({
           sessionId: sessionIdRef.current,
-          action: "sendMessage",
           chatInput: content,
         }),
       });
@@ -142,7 +145,14 @@ export function Chatbot() {
         <div ref={messagesEndRef} />
       </div>
 
-      <ChatInput onSend={sendMessage} disabled={isLoading} />
+      <ChatInput
+        {...({
+          onSend: sendMessage,
+          onBudgetStart: () => sendMessage("ACTION: BUDGET_START", "Solicitar presupuesto"),
+          showBudgetButton,
+          disabled: isLoading,
+        } as any)}
+      />
     </div>
   );
 }
