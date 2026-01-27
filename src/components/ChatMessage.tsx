@@ -7,10 +7,23 @@ interface ChatMessageProps {
   isLoading?: boolean;
 }
 
-// Function to parse message and convert URLs to clickable links
-function parseMessageWithLinks(message: string) {
+// Normalize incoming text and convert URLs to clickable links.
+function normalizeMessageText(message: string) {
+  return message
+    .replace(/[*_`~]/g, "") // strip common markdown markers
+    .replace(
+      /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,
+      "",
+    ) // remove emoji/symbols
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function renderMessageWithLinks(message: string) {
+  const cleanMessage = normalizeMessageText(message);
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const parts = message.split(urlRegex);
+  const parts = cleanMessage.split(urlRegex);
   
   return parts.map((part, index) => {
     if (urlRegex.test(part)) {
@@ -24,7 +37,7 @@ function parseMessageWithLinks(message: string) {
           rel="noopener noreferrer"
           className="text-primary underline hover:text-primary/80 transition-colors break-all"
         >
-          {part}
+          link
         </a>
       );
     }
@@ -65,7 +78,7 @@ export function ChatMessage({ message, isUser, isLoading }: ChatMessageProps) {
           </div>
         ) : (
           <p className="text-sm leading-relaxed whitespace-pre-wrap">
-            {parseMessageWithLinks(message)}
+            {renderMessageWithLinks(message)}
           </p>
         )}
       </div>
