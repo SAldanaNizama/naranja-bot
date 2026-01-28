@@ -37,7 +37,7 @@ function renderMessageWithLinks(message: string) {
           rel="noopener noreferrer"
           className="text-primary underline hover:text-primary/80 transition-colors break-all"
         >
-          link
+          ver ficha
         </a>
       );
     }

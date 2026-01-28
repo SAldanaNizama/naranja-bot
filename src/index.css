@@ -115,6 +115,10 @@
   .animate-pulse-dot {
     animation: pulseDot 1.4s ease-in-out infinite;
   }
+
+  .budget-attention {
+    animation: budgetAttention 5s ease-out forwards;
+  }
 }
 
 @keyframes fadeIn {
@@ -145,5 +149,23 @@
   40% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes budgetAttention {
+  0% {
+    background-color: hsl(24 95% 53%);
+    color: hsl(0 0% 100%);
+    box-shadow: 0 0 0 0 hsla(24, 95%, 53%, 0.6);
+  }
+  60% {
+    background-color: hsl(24 95% 53%);
+    color: hsl(0 0% 100%);
+    box-shadow: 0 0 0 10px hsla(24, 95%, 53%, 0);
+  }
+  100% {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    box-shadow: none;
   }
 }

@@ -16,7 +16,7 @@ export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content: "Hola, soy Finder Plus, tu asistente de Eventoplus. ¿En qué te podemos ayudar?",
+      content: "Hola, soy Finder Plus, tu asistente de eventoplus. ¿En qué te podemos ayudar?",
       isUser: false,
     },
   ]);
@@ -25,7 +25,7 @@ export function Chatbot() {
   const sessionIdRef = useRef<string>(`user-${Date.now()}`);
   const { toast } = useToast();
   const showBudgetButton = messages.some(
-    (message) => !message.isUser && /\b1:/.test(message.content),
+    (message) => !message.isUser && /\b1\./.test(message.content),
   );
 
   const scrollToBottom = () => {

@@ -61,7 +61,7 @@ export function ChatInput({
             "hover:bg-muted active:scale-95",
             "transition-all duration-200",
             "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
-            "shadow-soft"
+            "shadow-soft budget-attention"
           )}
         >
           Solicitar presupuesto
