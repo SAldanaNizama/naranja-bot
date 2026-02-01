@@ -1,48 +1,56 @@
-import Database from 'better-sqlite3';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import pg from 'pg';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const { Pool } = pg;
 
-const db = new Database(join(__dirname, 'chats.db'));
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_SSL === 'false'
+    ? false
+    : { rejectUnauthorized: false },
+});
 
-// Crear tabla si no existe
-db.exec(`
-  CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id TEXT NOT NULL,
-    message TEXT NOT NULL,
-    is_user INTEGER NOT NULL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    metadata TEXT
-  );
+const initDb = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id SERIAL PRIMARY KEY,
+      session_id TEXT NOT NULL,
+      message TEXT NOT NULL,
+      is_user BOOLEAN NOT NULL,
+      timestamp TIMESTAMPTZ DEFAULT NOW(),
+      metadata JSONB
+    );
+  `);
 
-  CREATE INDEX IF NOT EXISTS idx_session_id ON messages(session_id);
-  CREATE INDEX IF NOT EXISTS idx_timestamp ON messages(timestamp);
-`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_session_id ON messages(session_id);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_timestamp ON messages(timestamp);`);
+};
 
-export const saveMessage = (sessionId, message, isUser, metadata = null) => {
-  const stmt = db.prepare(`
+const initPromise = initDb();
+
+export const saveMessage = async (sessionId, message, isUser, metadata = null) => {
+  await initPromise;
+  const query = `
     INSERT INTO messages (session_id, message, is_user, metadata)
-    VALUES (?, ?, ?, ?)
-  `);
-  
-  return stmt.run(sessionId, message, isUser ? 1 : 0, metadata ? JSON.stringify(metadata) : null);
+    VALUES ($1, $2, $3, $4)
+  `;
+  const values = [sessionId, message, isUser, metadata];
+  return pool.query(query, values);
 };
 
-export const getMessagesBySession = (sessionId) => {
-  const stmt = db.prepare(`
+export const getMessagesBySession = async (sessionId) => {
+  await initPromise;
+  const query = `
     SELECT * FROM messages
-    WHERE session_id = ?
+    WHERE session_id = $1
     ORDER BY timestamp ASC
-  `);
-  
-  return stmt.all(sessionId);
+  `;
+  const { rows } = await pool.query(query, [sessionId]);
+  return rows;
 };
 
-export const getAllSessions = () => {
-  const stmt = db.prepare(`
+export const getAllSessions = async () => {
+  await initPromise;
+  const query = `
     SELECT 
       session_id,
       COUNT(*) as message_count,
@@ -51,9 +59,9 @@ export const getAllSessions = () => {
     FROM messages
     GROUP BY session_id
     ORDER BY last_message DESC
-  `);
-  
-  return stmt.all();
+  `;
+  const { rows } = await pool.query(query);
+  return rows;
 };
 
-export default db;
+export default pool;

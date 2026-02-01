@@ -1,10 +1,8 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import fetch from 'node-fetch';
 import { saveMessage, getMessagesBySession, getAllSessions } from './database.js';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,7 +21,7 @@ app.post('/api/chat', async (req, res) => {
 
   try {
     // 1. Guardar mensaje del usuario
-    saveMessage(sessionId, chatInput, true);
+    await saveMessage(sessionId, chatInput, true);
 
     // 2. Enviar a n8n
     const n8nResponse = await fetch(N8N_WEBHOOK_URL, {
@@ -58,7 +56,7 @@ app.post('/api/chat', async (req, res) => {
       }
 
       // Guardar respuesta completa del bot
-      saveMessage(sessionId, accumulatedContent, false);
+      await saveMessage(sessionId, accumulatedContent, false);
       res.end();
     } else {
       // Respuesta JSON normal
@@ -66,7 +64,7 @@ app.post('/api/chat', async (req, res) => {
       const botMessage = data.output || data.message || data.response || 'Sin respuesta';
 
       // Guardar respuesta del bot
-      saveMessage(sessionId, botMessage, false);
+      await saveMessage(sessionId, botMessage, false);
 
       res.json({ response: botMessage });
     }
@@ -74,7 +72,7 @@ app.post('/api/chat', async (req, res) => {
     console.error('Error en /api/chat:', error);
     
     // Guardar error en DB
-    saveMessage(sessionId, `Error: ${error.message}`, false, { error: true });
+    await saveMessage(sessionId, `Error: ${error.message}`, false, { error: true });
     
     res.status(500).json({ 
       error: 'Error al procesar el mensaje',
@@ -86,8 +84,12 @@ app.post('/api/chat', async (req, res) => {
 // Endpoint admin: obtener todos los chats por sesión
 app.get('/api/admin/sessions', (req, res) => {
   try {
-    const sessions = getAllSessions();
-    res.json(sessions);
+    getAllSessions()
+      .then((sessions) => res.json(sessions))
+      .catch((error) => {
+        console.error('Error en /api/admin/sessions:', error);
+        res.status(500).json({ error: 'Error al obtener sesiones' });
+      });
   } catch (error) {
     console.error('Error en /api/admin/sessions:', error);
     res.status(500).json({ error: 'Error al obtener sesiones' });
@@ -98,8 +100,12 @@ app.get('/api/admin/sessions', (req, res) => {
 app.get('/api/admin/sessions/:sessionId', (req, res) => {
   try {
     const { sessionId } = req.params;
-    const messages = getMessagesBySession(sessionId);
-    res.json(messages);
+    getMessagesBySession(sessionId)
+      .then((messages) => res.json(messages))
+      .catch((error) => {
+        console.error('Error en /api/admin/sessions/:sessionId:', error);
+        res.status(500).json({ error: 'Error al obtener mensajes' });
+      });
   } catch (error) {
     console.error('Error en /api/admin/sessions/:sessionId:', error);
     res.status(500).json({ error: 'Error al obtener mensajes' });
