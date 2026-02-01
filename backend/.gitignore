@@ -1,0 +1,5 @@
+node_modules/
+chats.db
+chats.db-shm
+chats.db-wal
+.env

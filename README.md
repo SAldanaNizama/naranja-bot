@@ -1,59 +1,99 @@
-# Proyecto Naranja Bot
+# FinderAI Bot
 
-## Información del proyecto
+Bot de asistencia virtual para eventolplux con backend Node.js + SQLite.
 
-Aplicación web de chat basada en React + Vite.
+## Arquitectura
 
-## Cómo editar este proyecto
+- **Frontend**: React + Vite + TypeScript + Tailwind
+- **Backend**: Node.js + Express + SQLite
+- **Integración**: n8n webhook para IA conversacional
 
-There are several ways of editing your application.
+## Instalación
 
-**Usa tu IDE**
+### 1. Frontend
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```bash
+npm install
+cp .env.example .env
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Edita `.env` con la URL del backend:
+```
+VITE_API_URL=http://localhost:3001
+```
 
-Follow these steps:
+### 2. Backend
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+```bash
+cd backend
+npm install
+cp .env.example .env
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+El `.env` ya tiene configurado el webhook de n8n.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Ejecución Local
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Terminal 1: Backend
+```bash
+cd backend
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Se ejecuta en `http://localhost:3001`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Terminal 2: Frontend
+```bash
+npm run dev
+```
 
-**Use GitHub Codespaces**
+Se ejecuta en `http://localhost:8080`
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Funcionalidades
 
-## What technologies are used for this project?
+### Chat
+- Envío de mensajes a n8n
+- Respuestas streaming o JSON
+- SessionId persistente por sesión
+- Botón "Solicitar presupuesto" (aparece al detectar "1.")
+- Limpieza de markdown/emojis en respuestas
+- Enlaces convertidos a "ver ficha"
 
-This project is built with:
+### Base de Datos
+Todos los mensajes (usuario + bot) se guardan en `backend/chats.db` con:
+- `session_id`: ID único por sesión
+- `message`: contenido
+- `is_user`: 1 si es usuario, 0 si es bot
+- `timestamp`: fecha/hora
+- `metadata`: JSON adicional (errores, etc)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### API Admin
 
-## Cómo desplegar
+- **GET** `/api/admin/sessions` - Lista todas las sesiones
+- **GET** `/api/admin/sessions/:sessionId` - Mensajes de una sesión
 
-Compila con `npm run build` y sirve el contenido de `dist/` con tu proveedor favorito.
+Ejemplo:
+```bash
+curl http://localhost:3001/api/admin/sessions
+```
+
+## Despliegue
+
+### Frontend (Render Static Site)
+- **Build Command**: `npm run build`
+- **Publish Directory**: `dist`
+- **Environment Variable**: `VITE_API_URL` → URL del backend en producción
+
+### Backend (Render Web Service o Railway)
+- **Build Command**: `cd backend && npm install`
+- **Start Command**: `cd backend && npm start`
+- **Environment Variables**:
+  - `PORT`: 3001 (o lo que asigne Render)
+  - `N8N_WEBHOOK_URL`: webhook de n8n
+
+## Tecnologías
+
+- **Frontend**: Vite, React, TypeScript, shadcn-ui, Tailwind CSS
+- **Backend**: Node.js, Express, better-sqlite3, node-fetch
+- **Database**: SQLite
+- **IA**: n8n webhook

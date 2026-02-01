@@ -10,7 +10,8 @@ interface Message {
   isUser: boolean;
 }
 
-const N8N_WEBHOOK_URL = "https://gexternia.app.n8n.cloud/webhook/949b6b9a-69a6-40b2-85e1-36e2ddb613f2/chat";
+// Backend API URL (cambiar a producción cuando se despliegue)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
@@ -47,7 +48,7 @@ export function Chatbot() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(N8N_WEBHOOK_URL, {
+      const response = await fetch(`${API_URL}/api/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
