@@ -28,6 +28,17 @@ export function Chatbot() {
   const showBudgetButton = messages.some(
     (message) => !message.isUser && /\b1\./.test(message.content),
   );
+  const resetChat = () => {
+    sessionIdRef.current = `user-${Date.now()}`;
+    setIsLoading(false);
+    setMessages([
+      {
+        id: "welcome",
+        content: "Hola, soy Finder Plus, tu asistente de eventoplus. ¿En qué te podemos ayudar?",
+        isUser: false,
+      },
+    ]);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -129,7 +140,7 @@ export function Chatbot() {
 
   return (
     <div className="flex flex-col h-screen max-h-screen bg-background">
-      <ChatHeader />
+      <ChatHeader onNewChat={resetChat} />
       
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
