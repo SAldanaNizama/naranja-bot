@@ -3,6 +3,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -13,7 +14,11 @@ interface Message {
 // Backend API URL (cambiar a producción cuando se despliegue)
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
-export function Chatbot() {
+interface ChatbotProps {
+  mode?: "page" | "popup";
+}
+
+export function Chatbot({ mode = "page" }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -138,11 +143,20 @@ export function Chatbot() {
     }
   };
 
+  const isPopup = mode === "popup";
+
   return (
-    <div className="flex flex-col h-screen max-h-screen bg-background">
-      <ChatHeader onNewChat={resetChat} />
-      
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div
+      className={cn(
+        "flex flex-col bg-background",
+        isPopup
+          ? "w-[92vw] max-w-md h-[70vh] max-h-[80vh] rounded-2xl border border-border shadow-lg"
+          : "h-[100svh] max-h-[100svh]"
+      )}
+    >
+      <ChatHeader onNewChat={resetChat} compact={isPopup} />
+
+      <div className={cn("flex-1 overflow-y-auto space-y-4", isPopup ? "p-3" : "p-4")}>
         {messages.map((message) => (
           <ChatMessage
             key={message.id}
