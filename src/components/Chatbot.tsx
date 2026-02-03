@@ -30,9 +30,20 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string>(`user-${Date.now()}`);
   const { toast } = useToast();
+  const showAdvisorButton = messages.some(
+    (message) =>
+      !message.isUser &&
+      message.content.toLowerCase().includes("consulta con nuestro equipo asesor"),
+  );
   const showBudgetButton = messages.some(
     (message) => !message.isUser && /\b1\./.test(message.content),
   );
+  const actionLabel = showAdvisorButton
+    ? "Solicitar asesor"
+    : showBudgetButton
+    ? "Solicitar presupuesto"
+    : undefined;
+  const actionPayload = showAdvisorButton ? "ACTION: ADVISOR_START" : "ACTION: BUDGET_START";
   const resetChat = () => {
     sessionIdRef.current = `user-${Date.now()}`;
     setIsLoading(false);
@@ -173,8 +184,8 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
       <ChatInput
         {...({
           onSend: sendMessage,
-          onBudgetStart: () => sendMessage("ACTION: BUDGET_START", "Solicitar presupuesto"),
-          showBudgetButton,
+          onActionStart: () => sendMessage(actionPayload, actionLabel || ""),
+          actionLabel,
           disabled: isLoading,
         } as any)}
       />

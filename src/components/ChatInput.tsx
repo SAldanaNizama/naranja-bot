@@ -4,15 +4,15 @@ import { cn } from "@/lib/utils";
 
 export interface ChatInputProps {
   onSend: (message: string) => void;
-  onBudgetStart?: () => void;
-  showBudgetButton?: boolean;
+  onActionStart?: () => void;
+  actionLabel?: string;
   disabled?: boolean;
 }
 
 export function ChatInput({
   onSend,
-  onBudgetStart = () => {},
-  showBudgetButton = false,
+  onActionStart = () => {},
+  actionLabel,
   disabled,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
@@ -49,10 +49,10 @@ export function ChatInput({
           "disabled:opacity-50 disabled:cursor-not-allowed"
         )}
       />
-      {showBudgetButton && (
+      {actionLabel && (
         <button
           type="button"
-          onClick={onBudgetStart}
+          onClick={onActionStart}
           disabled={disabled}
           className={cn(
             "px-4 py-3 rounded-xl border border-border bg-background",
@@ -64,7 +64,7 @@ export function ChatInput({
             "shadow-soft budget-attention"
           )}
         >
-          Solicitar presupuesto
+          {actionLabel}
         </button>
       )}
       <button
