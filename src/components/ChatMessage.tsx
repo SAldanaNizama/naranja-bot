@@ -24,11 +24,15 @@ function renderMessageWithLinks(message: string) {
   const cleanMessage = normalizeMessageText(message);
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const parts = cleanMessage.split(urlRegex);
+  const newsletterUrl = "https://www.eventoplus.com/newsletter";
   
   return parts.map((part, index) => {
     if (urlRegex.test(part)) {
       // Reset regex lastIndex since we're reusing it
       urlRegex.lastIndex = 0;
+      const normalizedUrl = part.replace(/\/+$/, "");
+      const linkLabel =
+        normalizedUrl === newsletterUrl ? "Aqui" : "ver ficha";
       return (
         <a
           key={index}
@@ -37,7 +41,7 @@ function renderMessageWithLinks(message: string) {
           rel="noopener noreferrer"
           className="text-primary underline hover:text-primary/80 transition-colors break-all"
         >
-          ver ficha
+          {linkLabel}
         </a>
       );
     }
