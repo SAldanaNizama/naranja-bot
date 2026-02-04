@@ -23,30 +23,65 @@ function normalizeMessageText(message: string) {
 function renderMessageWithLinks(message: string) {
   const cleanMessage = normalizeMessageText(message);
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const parts = cleanMessage.split(urlRegex);
+  const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
   const newsletterUrl = "https://www.eventoplus.com/newsletter";
-  
-  return parts.map((part, index) => {
-    if (urlRegex.test(part)) {
-      // Reset regex lastIndex since we're reusing it
-      urlRegex.lastIndex = 0;
-      const normalizedUrl = part.replace(/\/+$/, "");
-      const linkLabel =
-        normalizedUrl === newsletterUrl ? "Aqui" : "ver ficha";
-      return (
-        <a
-          key={index}
-          href={part}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary underline hover:text-primary/80 transition-colors break-all"
-        >
-          {linkLabel}
-        </a>
-      );
+  const nodes: Array<string | JSX.Element> = [];
+  let cursor = 0;
+  let keyIndex = 0;
+
+  const pushTextWithUrls = (text: string) => {
+    const parts = text.split(urlRegex);
+    parts.forEach((part) => {
+      if (urlRegex.test(part)) {
+        urlRegex.lastIndex = 0;
+        const normalizedUrl = part.replace(/\/+$/, "");
+        const linkLabel =
+          normalizedUrl === newsletterUrl ? "Aqui" : "ver ficha";
+        nodes.push(
+          <a
+            key={`u-${keyIndex++}`}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline hover:text-primary/80 transition-colors break-all"
+          >
+            {linkLabel}
+          </a>
+        );
+      } else if (part) {
+        nodes.push(part);
+      }
+    });
+  };
+
+  for (const match of cleanMessage.matchAll(markdownLinkRegex)) {
+    const matchIndex = match.index ?? 0;
+    const label = match[1];
+    const url = match[2];
+    if (matchIndex > cursor) {
+      pushTextWithUrls(cleanMessage.slice(cursor, matchIndex));
     }
-    return part;
-  });
+    const normalizedUrl = url.replace(/\/+$/, "");
+    const linkLabel = normalizedUrl === newsletterUrl ? "Aqui" : label;
+    nodes.push(
+      <a
+        key={`m-${keyIndex++}`}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary underline hover:text-primary/80 transition-colors break-all"
+      >
+        {linkLabel}
+      </a>
+    );
+    cursor = matchIndex + match[0].length;
+  }
+
+  if (cursor < cleanMessage.length) {
+    pushTextWithUrls(cleanMessage.slice(cursor));
+  }
+
+  return nodes;
 }
 
 export function ChatMessage({ message, isUser, isLoading }: ChatMessageProps) {
