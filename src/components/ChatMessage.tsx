@@ -20,11 +20,30 @@ function normalizeMessageText(message: string) {
     .trim();
 }
 
+const NEWSLETTER_URL = "https://www.eventoplus.com/newsletter";
+
+function isVerFichaUrl(url: string): boolean {
+  const normalized = url.replace(/\/+$/, "").toLowerCase();
+  if (!normalized.includes("eventoplus.com")) return false;
+  if (normalized === NEWSLETTER_URL.toLowerCase()) return false;
+  return (
+    normalized.includes("/espacios") ||
+    normalized.includes("/proveedores") ||
+    normalized.includes("/proovedores") ||
+    normalized.includes("/agencias")
+  );
+}
+
+function getLinkLabelForBareUrl(normalizedUrl: string): string {
+  if (normalizedUrl === NEWSLETTER_URL) return "Aqui";
+  if (isVerFichaUrl(normalizedUrl)) return "ver ficha";
+  return "Acceder a la sección";
+}
+
 function renderMessageWithLinks(message: string) {
   const cleanMessage = normalizeMessageText(message);
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
-  const newsletterUrl = "https://www.eventoplus.com/newsletter";
   const nodes: Array<string | JSX.Element> = [];
   let cursor = 0;
   let keyIndex = 0;
@@ -32,11 +51,10 @@ function renderMessageWithLinks(message: string) {
   const pushTextWithUrls = (text: string) => {
     const parts = text.split(urlRegex);
     parts.forEach((part) => {
-      if (urlRegex.test(part)) {
-        urlRegex.lastIndex = 0;
+      urlRegex.lastIndex = 0;
+      if (urlRegex.test(part) && !part.includes("@")) {
         const normalizedUrl = part.replace(/\/+$/, "");
-        const linkLabel =
-          normalizedUrl === newsletterUrl ? "Aqui" : "ver ficha";
+        const linkLabel = getLinkLabelForBareUrl(normalizedUrl);
         nodes.push(
           <a
             key={`u-${keyIndex++}`}
@@ -61,19 +79,23 @@ function renderMessageWithLinks(message: string) {
     if (matchIndex > cursor) {
       pushTextWithUrls(cleanMessage.slice(cursor, matchIndex));
     }
-    const normalizedUrl = url.replace(/\/+$/, "");
-    const linkLabel = normalizedUrl === newsletterUrl ? "Aqui" : label;
-    nodes.push(
-      <a
-        key={`m-${keyIndex++}`}
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-primary underline hover:text-primary/80 transition-colors break-all"
-      >
-        {linkLabel}
-      </a>
-    );
+    if (url.includes("@")) {
+      nodes.push(match[0]);
+    } else {
+      const normalizedUrl = url.replace(/\/+$/, "");
+      const linkLabel = normalizedUrl === NEWSLETTER_URL ? "Aqui" : label;
+      nodes.push(
+        <a
+          key={`m-${keyIndex++}`}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline hover:text-primary/80 transition-colors break-all"
+        >
+          {linkLabel}
+        </a>
+      );
+    }
     cursor = matchIndex + match[0].length;
   }
 
