@@ -11,7 +11,7 @@ const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
 app.use(cors());
 app.use(express.json());
 
-// Endpoint principal: recibe mensaje, guarda, envía a n8n, guarda respuesta
+// Endpoint principal: SSE inmediato, keep-alive, pipe n8n stream o JSON
 app.post('/api/chat', async (req, res) => {
   const { sessionId, chatInput } = req.body;
 
@@ -19,65 +19,78 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: 'sessionId y chatInput son requeridos' });
   }
 
-  try {
-    // 1. Guardar mensaje del usuario
-    await saveMessage(sessionId, chatInput, true);
+  // 1) Guardar mensaje usuario
+  await saveMessage(sessionId, chatInput, true);
 
-    // 2. Enviar a n8n
+  // 2) Abrir stream YA para evitar timeouts (524)
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+
+  // Flush inmediato (no visible en UI, por el trim/normalizado del front)
+  res.write(' \n');
+
+  // Keep-alive cada 15s (evita que se corte por inactividad)
+  const keepAlive = setInterval(() => {
+    try {
+      res.write(' \n');
+    } catch {}
+  }, 15000);
+
+  let accumulatedContent = '';
+
+  try {
+    // 3) Llamar a n8n (misma URL y body que ya usabas)
     const n8nResponse = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sessionId,
-        chatInput,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, chatInput }),
     });
 
     if (!n8nResponse.ok) {
-      throw new Error(`n8n respondió con status ${n8nResponse.status}`);
+      const msg = `Error: n8n respondió con status ${n8nResponse.status}`;
+      accumulatedContent = msg;
+      res.write(msg);
+      await saveMessage(sessionId, msg, false, { error: true });
+      return;
     }
 
-    const contentType = n8nResponse.headers.get('content-type');
+    const contentType = n8nResponse.headers.get('content-type') || '';
 
-    // Manejar streaming
-    if (contentType?.includes('text/event-stream') || contentType?.includes('text/plain')) {
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-
-      let accumulatedContent = '';
-
+    // 4A) Si n8n devuelve texto/stream => lo pipeamos al front
+    if (contentType.includes('text/event-stream') || contentType.includes('text/plain')) {
       for await (const chunk of n8nResponse.body) {
         const text = chunk.toString();
         accumulatedContent += text;
         res.write(text);
       }
 
-      // Guardar respuesta completa del bot
       await saveMessage(sessionId, accumulatedContent, false);
-      res.end();
-    } else {
-      // Respuesta JSON normal
-      const data = await n8nResponse.json();
-      const botMessage = data.output || data.message || data.response || 'Sin respuesta';
-
-      // Guardar respuesta del bot
-      await saveMessage(sessionId, botMessage, false);
-
-      res.json({ response: botMessage });
+      return;
     }
+
+    // 4B) Si n8n devuelve JSON => extraer mensaje y enviarlo por stream
+    const data = await n8nResponse.json().catch(() => ({}));
+    const botMessage =
+      data.output || data.message || data.response || data.answer || 'Sin respuesta';
+
+    accumulatedContent = botMessage;
+    res.write(botMessage);
+    await saveMessage(sessionId, botMessage, false);
   } catch (error) {
     console.error('Error en /api/chat:', error);
-    
-    // Guardar error en DB
+
+    const msg = 'Lo siento, hubo un problema al procesar tu mensaje. Por favor, intenta de nuevo.';
+    try {
+      res.write(msg);
+    } catch {}
+
     await saveMessage(sessionId, `Error: ${error.message}`, false, { error: true });
-    
-    res.status(500).json({ 
-      error: 'Error al procesar el mensaje',
-      details: error.message 
-    });
+  } finally {
+    clearInterval(keepAlive);
+    try {
+      res.end();
+    } catch {}
   }
 });
 
@@ -120,4 +133,4 @@ app.get('/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Backend FinderAI corriendo en http://localhost:${PORT}`);
   console.log(`📊 Admin API: http://localhost:${PORT}/api/admin/sessions`);
-});
+}); 
