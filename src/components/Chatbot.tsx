@@ -94,26 +94,29 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
       const contentType = response.headers.get("content-type");
       
       if (contentType?.includes("text/event-stream") || contentType?.includes("text/plain")) {
-        // Handle streaming response
+        // Handle streaming response: mantener 3 puntitos hasta que llegue el primer contenido
         const botMessageId = (Date.now() + 1).toString();
-        
-        // Add empty bot message that will be updated
         setMessages((prev) => [...prev, { id: botMessageId, content: "", isUser: false }]);
-        setIsLoading(false);
-        
+
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
         let accumulatedContent = "";
-        
+        let loadingDismissed = false;
+
         if (reader) {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            
+
             const chunk = decoder.decode(value, { stream: true });
             accumulatedContent += chunk;
-            
-            // Update the bot message with accumulated content
+
+            // Quitar 3 puntitos solo cuando haya contenido real (no solo keep-alive " \n")
+            if (!loadingDismissed && accumulatedContent.trim().length > 0) {
+              setIsLoading(false);
+              loadingDismissed = true;
+            }
+
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === botMessageId
@@ -123,6 +126,7 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
             );
           }
         }
+        if (!loadingDismissed) setIsLoading(false);
       } else {
         // Handle regular JSON response
         const data = await response.json();
