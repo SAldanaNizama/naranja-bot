@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
-import { saveMessage, getMessagesBySession, getAllSessions } from './database.js';
+import { saveMessage, getMessagesBySession, getAllSessions, saveLinkClick, getLinkClickStats, getLinkClicksBySession } from './database.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -123,6 +123,42 @@ app.get('/api/admin/sessions/:sessionId', (req, res) => {
     console.error('Error en /api/admin/sessions/:sessionId:', error);
     res.status(500).json({ error: 'Error al obtener mensajes' });
   }
+});
+
+// Registrar clic en un enlace del chat (sessionId, url, linkLabel)
+app.post('/api/link-click', async (req, res) => {
+  try {
+    const { sessionId, url, linkLabel } = req.body;
+    if (!sessionId || !url) {
+      return res.status(400).json({ error: 'sessionId y url son requeridos' });
+    }
+    await saveLinkClick(sessionId, url, linkLabel || null);
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error en /api/link-click:', error);
+    res.status(500).json({ error: 'Error al registrar el clic' });
+  }
+});
+
+// Admin: estadísticas de clics por enlace (url, link_label, clicks, last_clicked)
+app.get('/api/admin/link-clicks', (req, res) => {
+  getLinkClickStats()
+    .then((stats) => res.json(stats))
+    .catch((error) => {
+      console.error('Error en /api/admin/link-clicks:', error);
+      res.status(500).json({ error: 'Error al obtener estadísticas de enlaces' });
+    });
+});
+
+// Admin: clics de una sesión
+app.get('/api/admin/sessions/:sessionId/link-clicks', (req, res) => {
+  const { sessionId } = req.params;
+  getLinkClicksBySession(sessionId)
+    .then((clicks) => res.json(clicks))
+    .catch((error) => {
+      console.error('Error en /api/admin/sessions/:sessionId/link-clicks:', error);
+      res.status(500).json({ error: 'Error al obtener clics de la sesión' });
+    });
 });
 
 // Health check

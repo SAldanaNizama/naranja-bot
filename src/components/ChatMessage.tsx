@@ -5,6 +5,7 @@ interface ChatMessageProps {
   message: string;
   isUser: boolean;
   isLoading?: boolean;
+  onLinkClick?: (url: string, label: string) => void;
 }
 
 // Normalize incoming text and convert URLs to clickable links.
@@ -40,7 +41,10 @@ function getLinkLabelForBareUrl(normalizedUrl: string): string {
   return "Acceder a la sección";
 }
 
-function renderMessageWithLinks(message: string) {
+function renderMessageWithLinks(
+  message: string,
+  onLinkClick?: (url: string, label: string) => void
+) {
   const cleanMessage = normalizeMessageText(message);
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
@@ -62,6 +66,7 @@ function renderMessageWithLinks(message: string) {
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary underline hover:text-primary/80 transition-colors break-all"
+            onClick={() => onLinkClick?.(part, linkLabel)}
           >
             {linkLabel}
           </a>
@@ -91,6 +96,7 @@ function renderMessageWithLinks(message: string) {
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline hover:text-primary/80 transition-colors break-all"
+          onClick={() => onLinkClick?.(url, linkLabel)}
         >
           {linkLabel}
         </a>
@@ -106,7 +112,7 @@ function renderMessageWithLinks(message: string) {
   return nodes;
 }
 
-export function ChatMessage({ message, isUser, isLoading }: ChatMessageProps) {
+export function ChatMessage({ message, isUser, isLoading, onLinkClick }: ChatMessageProps) {
   return (
     <div
       className={cn(
@@ -139,7 +145,7 @@ export function ChatMessage({ message, isUser, isLoading }: ChatMessageProps) {
           </div>
         ) : (
           <p className="text-sm leading-relaxed whitespace-pre-wrap">
-            {renderMessageWithLinks(message)}
+            {renderMessageWithLinks(message, onLinkClick)}
           </p>
         )}
       </div>

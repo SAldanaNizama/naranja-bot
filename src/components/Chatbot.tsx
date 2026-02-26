@@ -60,6 +60,18 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleLinkClick = (url: string, label: string) => {
+    fetch(`${API_URL}/api/link-click`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: sessionIdRef.current,
+        url,
+        linkLabel: label,
+      }),
+    }).catch(() => {});
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -175,6 +187,7 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
             key={message.id}
             message={message.content}
             isUser={message.isUser}
+            onLinkClick={handleLinkClick}
           />
         ))}
         {isLoading && (
