@@ -22,7 +22,7 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content: "Hola, soy Finder Plus, tu asistente de eventoplus. ¿En qué te podemos ayudar?",
+      content: "¡HOLA! Soy Finder+IA. Estoy aquí para ayudarte a encontrar los PROVEEDORES que necesites, CONTENIDOS Y PODCASTS sobre temas de los eventos que te interesan.\n\n¿En qué te puedo ayudar hoy?",
       isUser: false,
     },
   ]);
@@ -50,7 +50,7 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
     setMessages([
       {
         id: "welcome",
-        content: "Hola, soy Finder Plus, tu asistente de eventoplus. ¿En qué te podemos ayudar?",
+        content: "¡HOLA! Soy Finder+IA. Estoy aquí para ayudarte a encontrar los PROVEEDORES que necesites, CONTENIDOS Y PODCASTS sobre temas de los eventos que te interesan.\n\n¿En qué te puedo ayudar hoy?",
         isUser: false,
       },
     ]);
