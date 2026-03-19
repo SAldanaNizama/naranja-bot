@@ -37,6 +37,7 @@ cp .env.example .env
 El `.env` ya viene configurado:
 ```
 PORT=3001
+OPENAI_API_KEY=TU_OPENAI_API_KEY_AQUI
 N8N_WEBHOOK_URL=https://gexternia.app.n8n.cloud/webhook/949b6b9a-69a6-40b2-85e1-36e2ddb613f2/chat
 ```
 

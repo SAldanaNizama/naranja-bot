@@ -89,6 +89,7 @@ curl http://localhost:3001/api/admin/sessions
 - **Start Command**: `cd backend && npm start`
 - **Environment Variables**:
   - `PORT`: 3001 (o lo que asigne Render)
+  - `OPENAI_API_KEY`: tu API key de OpenAI (para Whisper)
   - `N8N_WEBHOOK_URL`: webhook de n8n
 
 ## Tecnologías

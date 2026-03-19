@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
+import multer from 'multer';
+import FormData from 'form-data';
 import { saveMessage, getMessagesBySession, getAllSessions, saveLinkClick, getLinkClickStats, getLinkClicksBySession } from './database.js';
 
 const app = express();
@@ -10,6 +12,13 @@ const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
 
 app.use(cors());
 app.use(express.json());
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 25 * 1024 * 1024, // 25MB max
+  },
+});
 
 // Endpoint principal: SSE inmediato, keep-alive, pipe n8n stream o JSON
 app.post('/api/chat', async (req, res) => {
@@ -91,6 +100,53 @@ app.post('/api/chat', async (req, res) => {
     try {
       res.end();
     } catch {}
+  }
+});
+
+// Endpoint: Whisper (audio -> texto)
+app.post('/api/whisper', upload.single('audio'), async (req, res) => {
+  try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'Falta OPENAI_API_KEY en el backend' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Campo audio requerido' });
+    }
+
+    const form = new FormData();
+    form.append('file', req.file.buffer, {
+      filename: req.file.originalname || 'audio.webm',
+      contentType: req.file.mimetype || 'audio/webm',
+    });
+    form.append('model', 'whisper-1');
+    form.append('language', 'es'); // forzar español
+    form.append('response_format', 'json');
+
+    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        ...form.getHeaders(),
+      },
+      body: form,
+    });
+
+    if (!whisperResponse.ok) {
+      const details = await whisperResponse.text().catch(() => '');
+      return res.status(whisperResponse.status).json({
+        error: 'Error de OpenAI al transcribir',
+        details,
+      });
+    }
+
+    const data = await whisperResponse.json();
+    const text = data?.text || '';
+    return res.json({ text });
+  } catch (error) {
+    console.error('Error en /api/whisper:', error);
+    return res.status(500).json({ error: 'Error interno al transcribir audio' });
   }
 });
 
