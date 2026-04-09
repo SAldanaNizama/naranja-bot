@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 interface ChatHeaderProps {
   onNewChat?: () => void;
   compact?: boolean;
@@ -6,14 +8,18 @@ interface ChatHeaderProps {
 export function ChatHeader({ onNewChat, compact = false }: ChatHeaderProps) {
   return (
     <div
-      className={`flex items-center justify-between border-b border-border bg-card ${
-        compact ? "py-2 px-3" : "py-2 px-4"
-      }`}
+      className={cn(
+        "flex items-center justify-between gap-2 border-b border-border bg-card",
+        compact ? "py-2 px-3" : "py-2 px-3 sm:px-4",
+      )}
     >
       <img
         src="/Finder.png"
         alt="FinderAI"
-        className={`w-auto object-contain ${compact ? "h-20" : "h-32"}`}
+        className={cn(
+          "w-auto max-h-[40vh] object-contain object-left",
+          compact ? "h-16 sm:h-20" : "h-16 sm:h-24 md:h-28 lg:h-32",
+        )}
       />
       {onNewChat && (
         <button

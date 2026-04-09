@@ -203,7 +203,13 @@ export function ChatInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3 p-4 border-t border-border bg-card">
+    <form
+      onSubmit={handleSubmit}
+      className={cn(
+        "flex min-w-0 flex-col gap-2 border-t border-border bg-card",
+        "p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:flex-row sm:items-end sm:gap-3 sm:p-4 sm:pb-4",
+      )}
+    >
       <input
         type="text"
         value={message}
@@ -213,62 +219,69 @@ export function ChatInput({
         placeholder="Escribe tu mensaje..."
         disabled={disabled || isTranscribing}
         className={cn(
-          "flex-1 px-4 py-3 rounded-xl border border-border bg-background",
+          "min-w-0 w-full flex-1 rounded-xl border border-border bg-background px-3 py-2.5 sm:px-4 sm:py-3",
           "text-sm placeholder:text-muted-foreground",
           "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary",
           "transition-all duration-200",
-          "disabled:opacity-50 disabled:cursor-not-allowed"
+          "disabled:opacity-50 disabled:cursor-not-allowed",
         )}
       />
-      {actionLabel && (
+      <div
+        className={cn(
+          "flex min-w-0 shrink-0 gap-2 sm:gap-3",
+          "w-full justify-end sm:w-auto sm:justify-start",
+        )}
+      >
+        {actionLabel && (
+          <button
+            type="button"
+            onClick={onActionStart}
+            disabled={disabled}
+            className={cn(
+              "min-w-0 flex-1 rounded-xl border border-border bg-background px-2 py-2.5 sm:flex-initial sm:px-4 sm:py-3",
+              "flex items-center justify-center gap-2",
+              "text-xs font-medium text-foreground sm:text-sm",
+              "hover:bg-muted active:scale-95",
+              "transition-all duration-200",
+              "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
+              "shadow-soft budget-attention",
+            )}
+          >
+            <span className="truncate">{actionLabel}</span>
+          </button>
+        )}
         <button
           type="button"
-          onClick={onActionStart}
-          disabled={disabled}
+          onClick={toggleRecording}
+          disabled={(disabled || isTranscribing) && !isRecording}
+          aria-label={isRecording ? "Detener grabación" : "Iniciar grabación"}
           className={cn(
-            "px-4 py-3 rounded-xl border border-border bg-background",
-            "flex items-center justify-center gap-2",
-            "font-medium text-sm text-foreground",
+            "shrink-0 rounded-xl border border-border bg-background px-3 py-2.5 sm:px-4 sm:py-3",
+            "flex items-center justify-center",
             "hover:bg-muted active:scale-95",
             "transition-all duration-200",
             "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
-            "shadow-soft budget-attention"
+            "shadow-soft",
           )}
         >
-          {actionLabel}
+          {isRecording ? <Square className="w-4 h-4 text-destructive" /> : <Mic className="w-4 h-4" />}
         </button>
-      )}
-      <button
-        type="button"
-        onClick={toggleRecording}
-        disabled={(disabled || isTranscribing) && !isRecording}
-        aria-label={isRecording ? "Detener grabación" : "Iniciar grabación"}
-        className={cn(
-          "px-4 py-3 rounded-xl border border-border bg-background",
-          "flex items-center justify-center",
-          "hover:bg-muted active:scale-95",
-          "transition-all duration-200",
-          "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
-          "shadow-soft"
-        )}
-      >
-        {isRecording ? <Square className="w-4 h-4 text-destructive" /> : <Mic className="w-4 h-4" />}
-      </button>
-      <button
-        type="submit"
-        disabled={!message.trim() || disabled || isTranscribing}
-        className={cn(
-          "px-4 py-3 rounded-xl bg-primary text-primary-foreground",
-          "flex items-center justify-center gap-2",
-          "font-medium text-sm",
-          "hover:opacity-90 active:scale-95",
-          "transition-all duration-200",
-          "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
-          "shadow-soft"
-        )}
-      >
-        <Send className="w-4 h-4" />
-      </button>
+        <button
+          type="submit"
+          disabled={!message.trim() || disabled || isTranscribing}
+          className={cn(
+            "shrink-0 rounded-xl bg-primary px-3 py-2.5 text-primary-foreground sm:px-4 sm:py-3",
+            "flex items-center justify-center gap-2",
+            "text-sm font-medium",
+            "hover:opacity-90 active:scale-95",
+            "transition-all duration-200",
+            "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
+            "shadow-soft",
+          )}
+        >
+          <Send className="w-4 h-4" />
+        </button>
+      </div>
     </form>
   );
 }
