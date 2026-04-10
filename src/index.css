@@ -89,6 +89,19 @@
     @apply border-border;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html,
+  body,
+  #root {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;

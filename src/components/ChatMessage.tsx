@@ -116,8 +116,8 @@ export function ChatMessage({ message, isUser, isLoading, onLinkClick }: ChatMes
   return (
     <div
       className={cn(
-        "flex gap-3 animate-slide-up",
-        isUser ? "flex-row-reverse" : "flex-row"
+        "flex max-w-full min-w-0 gap-3 animate-slide-up",
+        isUser ? "flex-row-reverse" : "flex-row",
       )}
     >
       <div
@@ -133,8 +133,8 @@ export function ChatMessage({ message, isUser, isLoading, onLinkClick }: ChatMes
 
       <div
         className={cn(
-          "max-w-[75%] px-4 py-3 shadow-soft",
-          isUser ? "chat-bubble-user" : "chat-bubble-bot"
+          "min-w-0 max-w-[85%] flex-1 px-4 py-3 shadow-soft sm:max-w-[75%] sm:flex-none",
+          isUser ? "chat-bubble-user" : "chat-bubble-bot",
         )}
       >
         {isLoading ? (

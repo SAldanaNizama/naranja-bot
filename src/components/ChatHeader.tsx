@@ -9,25 +9,27 @@ export function ChatHeader({ onNewChat, compact = false }: ChatHeaderProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-2 border-b border-border bg-card",
+        "flex min-w-0 max-w-full items-center justify-between gap-2 border-b border-border bg-card",
         compact ? "py-2 px-3" : "py-2 px-3 sm:px-4",
       )}
     >
-      <img
-        src="/Finder.png"
-        alt="FinderAI"
-        className={cn(
-          "w-auto max-h-[40vh] object-contain object-left",
-          compact ? "h-16 sm:h-20" : "h-16 sm:h-24 md:h-28 lg:h-32",
-        )}
-      />
+      <div className="min-w-0 flex-1 overflow-hidden pr-1">
+        <img
+          src="/Finder.png"
+          alt="FinderAI"
+          className={cn(
+            "block h-auto max-h-[min(40vh,8rem)] w-auto max-w-full object-contain object-left",
+            compact ? "h-16 sm:h-20" : "h-16 sm:h-24 md:h-28 lg:h-32",
+          )}
+        />
+      </div>
       {onNewChat && (
         <button
           type="button"
           onClick={onNewChat}
           aria-label="Nuevo chat"
           title="Nuevo chat"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-base hover:bg-accent hover:text-accent-foreground"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-background text-base hover:bg-accent hover:text-accent-foreground"
         >
           <svg
             width="26"

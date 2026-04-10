@@ -173,7 +173,7 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
   return (
     <div
       className={cn(
-        "flex flex-col overflow-hidden bg-background",
+        "flex w-full min-w-0 max-w-full flex-col overflow-hidden bg-background",
         isPopup
           ? "w-[92vw] max-w-md h-[70vh] max-h-[80vh] rounded-2xl border border-border shadow-lg"
           : "h-[100dvh] min-h-[100dvh] max-h-[100dvh]"
@@ -181,7 +181,12 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
     >
       <ChatHeader onNewChat={resetChat} compact={isPopup} />
 
-      <div className={cn("flex-1 overflow-y-auto space-y-4", isPopup ? "p-3" : "p-4")}>
+      <div
+        className={cn(
+          "min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden space-y-4",
+          isPopup ? "p-3" : "p-4",
+        )}
+      >
         {messages.map((message) => (
           <ChatMessage
             key={message.id}
