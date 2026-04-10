@@ -173,10 +173,10 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
   return (
     <div
       className={cn(
-        "flex flex-col bg-background",
+        "flex flex-col overflow-hidden bg-background",
         isPopup
           ? "w-[92vw] max-w-md h-[70vh] max-h-[80vh] rounded-2xl border border-border shadow-lg"
-          : "h-[100svh] max-h-[100svh]"
+          : "h-[100dvh] min-h-[100dvh] max-h-[100dvh]"
       )}
     >
       <ChatHeader onNewChat={resetChat} compact={isPopup} />
