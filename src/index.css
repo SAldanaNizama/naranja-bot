@@ -95,10 +95,17 @@
   }
 
   html,
-  body,
+  body {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
   #root {
     max-width: 100%;
     min-width: 0;
+    min-height: 100svh;
+    min-height: 100dvh;
     overflow-x: clip;
   }
 

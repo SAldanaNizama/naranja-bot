@@ -206,10 +206,29 @@ export function ChatInput({
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "box-border flex w-full min-w-0 max-w-full flex-col gap-2 overflow-x-hidden border-t border-border bg-card",
-        "p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:flex-row sm:items-end sm:gap-3 sm:p-4 sm:pb-4",
+        "box-border grid w-full min-w-0 max-w-full gap-2 overflow-x-hidden border-t border-border bg-card",
+        "grid-cols-[minmax(0,1fr)_2.75rem_2.75rem]",
+        "p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] sm:p-4 sm:pb-4",
       )}
     >
+      {actionLabel && (
+        <button
+          type="button"
+          onClick={onActionStart}
+          disabled={disabled}
+          className={cn(
+            "col-span-3 min-h-11 min-w-0 overflow-hidden rounded-xl border border-border bg-background px-2 py-2 sm:px-4 sm:py-3",
+            "flex items-center justify-center gap-2",
+            "text-xs font-medium text-foreground sm:text-sm",
+            "hover:bg-muted active:scale-95",
+            "transition-all duration-200",
+            "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
+            "shadow-soft budget-attention",
+          )}
+        >
+          <span className="truncate">{actionLabel}</span>
+        </button>
+      )}
       <input
         type="text"
         value={message}
@@ -218,64 +237,47 @@ export function ChatInput({
         onKeyDown={handleKeyDown}
         placeholder="Escribe tu mensaje..."
         disabled={disabled || isTranscribing}
+        autoComplete="off"
+        autoCorrect="on"
+        enterKeyHint="send"
         className={cn(
-          "min-w-0 w-full flex-1 rounded-xl border border-border bg-background px-3 py-2.5 sm:px-4 sm:py-3",
+          "col-span-1 min-w-0 max-w-full rounded-xl border border-border bg-background px-3 py-2.5 sm:px-4 sm:py-3",
           "text-base sm:text-sm placeholder:text-muted-foreground",
-          "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary",
+          "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:ring-offset-0",
           "transition-all duration-200",
           "disabled:opacity-50 disabled:cursor-not-allowed",
         )}
       />
-      <div className="flex w-full min-w-0 max-w-full shrink-0 flex-nowrap items-center justify-end gap-1.5 sm:gap-3">
-        {actionLabel && (
-          <button
-            type="button"
-            onClick={onActionStart}
-            disabled={disabled}
-            className={cn(
-              "min-h-11 min-w-0 flex-1 overflow-hidden rounded-xl border border-border bg-background px-2 py-2 sm:px-4 sm:py-3",
-              "flex items-center justify-center gap-2",
-              "text-xs font-medium text-foreground sm:text-sm",
-              "hover:bg-muted active:scale-95",
-              "transition-all duration-200",
-              "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
-              "shadow-soft budget-attention",
-            )}
-          >
-            <span className="truncate">{actionLabel}</span>
-          </button>
+      <button
+        type="button"
+        onClick={toggleRecording}
+        disabled={(disabled || isTranscribing) && !isRecording}
+        aria-label={isRecording ? "Detener grabación" : "Iniciar grabación"}
+        className={cn(
+          "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background",
+          "hover:bg-muted active:scale-95",
+          "transition-all duration-200",
+          "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
+          "shadow-soft",
         )}
-        <button
-          type="button"
-          onClick={toggleRecording}
-          disabled={(disabled || isTranscribing) && !isRecording}
-          aria-label={isRecording ? "Detener grabación" : "Iniciar grabación"}
-          className={cn(
-            "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background",
-            "hover:bg-muted active:scale-95",
-            "transition-all duration-200",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
-            "shadow-soft",
-          )}
-        >
-          {isRecording ? <Square className="w-4 h-4 text-destructive" /> : <Mic className="w-4 h-4" />}
-        </button>
-        <button
-          type="submit"
-          disabled={!message.trim() || disabled || isTranscribing}
-          aria-label="Enviar mensaje"
-          className={cn(
-            "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground",
-            "text-sm font-medium",
-            "hover:opacity-90 active:scale-95",
-            "transition-all duration-200",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
-            "shadow-soft",
-          )}
-        >
-          <Send className="w-4 h-4" aria-hidden />
-        </button>
-      </div>
+      >
+        {isRecording ? <Square className="w-4 h-4 text-destructive" /> : <Mic className="w-4 h-4" />}
+      </button>
+      <button
+        type="submit"
+        disabled={!message.trim() || disabled || isTranscribing}
+        aria-label="Enviar mensaje"
+        className={cn(
+          "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground",
+          "text-sm font-medium",
+          "hover:opacity-90 active:scale-95",
+          "transition-all duration-200",
+          "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
+          "shadow-soft",
+        )}
+      >
+        <Send className="w-4 h-4" aria-hidden />
+      </button>
     </form>
   );
 }

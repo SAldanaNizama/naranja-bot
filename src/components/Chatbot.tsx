@@ -183,7 +183,7 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
 
       <div
         className={cn(
-          "min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden space-y-4",
+          "min-h-0 min-w-0 overflow-y-auto overflow-x-hidden space-y-4",
           isPopup ? "p-3" : "p-3 sm:p-4",
         )}
       >
@@ -201,14 +201,16 @@ export function Chatbot({ mode = "page" }: ChatbotProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      <ChatInput
-        {...({
-          onSend: sendMessage,
-          onActionStart: () => sendMessage(actionPayload, actionLabel || ""),
-          actionLabel,
-          disabled: isLoading,
-        } as any)}
-      />
+      <div className="min-w-0 max-w-full shrink-0">
+        <ChatInput
+          {...({
+            onSend: sendMessage,
+            onActionStart: () => sendMessage(actionPayload, actionLabel || ""),
+            actionLabel,
+            disabled: isLoading,
+          } as any)}
+        />
+      </div>
     </div>
   );
 }
